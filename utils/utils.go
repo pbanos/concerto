@@ -14,6 +14,7 @@ import (
 	"github.com/codegangsta/cli"
 
 	log "github.com/Sirupsen/logrus"
+	"os/exec"
 )
 
 // TODO remove after migration
@@ -55,6 +56,21 @@ func Unzip(archive, target string) error {
 		if _, err := io.Copy(targetFile, fileReader); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+// TODO using cmd := exec.CommandContext(ctx,...
+func Untar(source, target string) error {
+
+	if err := os.MkdirAll(target, 0600); err != nil {
+		return err
+	}
+
+	cmd := exec.Command("tar", "-xzf", source, "-C", target)
+	if err := cmd.Run(); err != nil {
+		return err
 	}
 
 	return nil
@@ -175,4 +191,39 @@ func RandomString(strlen int) string {
 		result[i] = chars[r.Intn(len(chars))]
 	}
 	return string(result)
+}
+
+// Contains evaluates whether s contains x.
+func Contains(s []string, x string) bool {
+	for _, n := range s {
+		if x == n {
+			return true
+		}
+	}
+	return false
+}
+
+func RemoveFileInfo(fileInfo os.FileInfo, fileInfoName string) error {
+	if fileInfo.IsDir() {
+		d, err := os.Open(fileInfoName)
+		if err != nil {
+			return err
+		}
+		defer d.Close()
+		names, err := d.Readdirnames(-1)
+		if err != nil {
+			return err
+		}
+		for _, name := range names {
+			err = os.RemoveAll(filepath.Join(fileInfoName, name))
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	if err := os.Remove(fileInfoName); err != nil {
+		return err
+	}
+	return nil
 }
