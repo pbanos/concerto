@@ -202,28 +202,3 @@ func Contains(s []string, x string) bool {
 	}
 	return false
 }
-
-func RemoveFileInfo(fileInfo os.FileInfo, fileInfoName string) error {
-	if fileInfo.IsDir() {
-		d, err := os.Open(fileInfoName)
-		if err != nil {
-			return err
-		}
-		defer d.Close()
-		names, err := d.Readdirnames(-1)
-		if err != nil {
-			return err
-		}
-		for _, name := range names {
-			err = os.RemoveAll(filepath.Join(fileInfoName, name))
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	if err := os.Remove(fileInfoName); err != nil {
-		return err
-	}
-	return nil
-}
